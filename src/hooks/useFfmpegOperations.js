@@ -307,18 +307,39 @@ function useFfmpegOperations({ filePath, enableTransferTimestamps }) {
       '-f', outFormat, '-y', outPath,
     ];
 
-    const ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
+    const ffmpegPath = getFfmpegPath();
+    let ffmpegCommandLine;
+    if (window.format === "png") {
+      // terminate before any hyphen aka segment garbage
+      let terminateDirNameAt = outPath.indexOf("-")
+      if (terminateDirNameAt == -1) terminateDirNameAt = outPath.length -1 // shouldn't happen but jic
+      const dir = outPath.substring(0, terminateDirNameAt);
+      const clip_dir = dir + "/" + cutFromArgs[1].substring(0, cutFromArgs[1].indexOf(".")) + "/";
+      const out = clip_dir + "%05d.png";
+      if (! window.mc ) window.mc = ""
+      if (!fs.existsSync(dir)) fs.mkdir(dir)
+      if (!fs.existsSync(clip_dir)) fs.mkdir(clip_dir)
+      window.mc = window.mc + "mkdir -p " + clip_dir + " ; "
 
+      ffmpegArgs = [
+        ...cutFromArgs,
+        ...inputFilesArgs,
+        ...cutToArgs,
+        out,
+      ]
+      ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
+      window.mc = window.mc + ffmpegCommandLine + " ; "
+      // return
+    } else {
+      ffmpegCommandLine = getFfCommandLine('ffmpeg', ffmpegArgs);
+    }
     console.log(ffmpegCommandLine);
     appendFfmpegCommandLog(ffmpegCommandLine);
-
-    const ffmpegPath = getFfmpegPath();
     const process = execa(ffmpegPath, ffmpegArgs);
     handleProgress(process, cutDuration, onProgress);
     const result = await process;
     console.log(result.stdout);
-
-    await optionalTransferTimestamps(filePath, outPath, cutFrom);
+    if (window.format !== "png") await optionalTransferTimestamps(filePath, outPath, cutFrom);
   }, [filePath, optionalTransferTimestamps]);
 
   const cutMultiple = useCallback(async ({

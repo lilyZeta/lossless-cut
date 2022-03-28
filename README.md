@@ -17,6 +17,36 @@
 	<br>
 </div>
 
+## Divergence from the main fork
+This fork has some minor tweaks to assist in frame extraction while allowing normal use  
+This mod is only tested in ubuntu
+This file has changes
+src/hooks/useFfmpegOperations.js
+
+- You can remove the local ffmpeg paths from package.json: such as "ffmpeg/linux/" under from: below  (optional, lets you ignore the ffmpeg download scripts if you have that setup richly)
+    "linux":  
+      "extraResources":  
+          "from": "ffmpeg/linux/ffmpeg",  
+          "to": "ffmpeg"  
+          "from": "ffmpeg/linux/ffprobe",  
+          "to": "ffprobe"  
+- Added frames export support to the dev tools via attatching vars to the global namespace.   
+  
+### Frame Export Instructions
+In dev tools from Lossless cut type  
+window.format = "png"  
+this will prevent the normal export and build the cli command for frames  
+if failure occurs such as a dir creation error you could try it on a manual cli as follows  
+after exporting with the standard GUI button copy the command under the global var window.mc (i.e. multi-cut)  
+then paste in an external cli with ffmpeg installed on PATH  
+in dev tools run window.mc = "" between exports or it will append additional commands (or do not if you desire that behavior)  
+  
+Export creates directories 1 per clip then outputs frames to them.  
+40 sec of 1080 mp4 is output to about 2 Gigs of png (900) at typical 24fps  
+The input file output dirs are set within the L.C. gui  
+each clip is in sub-folders which are named the timestamp start of each clip in seconds  
+
+# Main docs...
 
 LosslessCut aims to be the ultimate cross platform FFmpeg GUI for extremely fast and lossless operations on video, audio, subtitle and other related media files.
 The main feature is lossless trimming and cutting of video and audio files, which is great for saving space by rough-cutting your large video files taken from a video camera, GoPro, drone, etc. It lets you quickly extract the good parts from your videos and discard many gigabytes of data without doing a slow re-encode and thereby losing quality. Or you can add a music or subtitle track to your video without needing to encode. Everything is extremely fast because it does an almost direct data copy, fueled by the awesome FFmpeg which does all the grunt work.
